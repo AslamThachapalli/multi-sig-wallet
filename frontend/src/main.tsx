@@ -3,8 +3,11 @@ import { createRoot } from "react-dom/client";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "@/lib/wagmiConfig";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router";
+import { Toaster } from "@/components/ui/sonner"
 import "./index.css";
-import App from "./App.tsx";
+
+import { WalletListPage } from "./features/walletList";
 
 const queryClient = new QueryClient();
 
@@ -12,7 +15,12 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <WagmiProvider config={wagmiConfig}>
             <QueryClientProvider client={queryClient}>
-                <App />
+                <BrowserRouter>
+                    <Routes>
+                        <Route index element={<WalletListPage />} />
+                    </Routes>
+                </BrowserRouter>
+                <Toaster />
             </QueryClientProvider>
         </WagmiProvider>
     </StrictMode>
