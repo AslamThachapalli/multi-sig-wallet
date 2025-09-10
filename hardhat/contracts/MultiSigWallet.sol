@@ -151,28 +151,12 @@ contract MultiSigWallet {
         return transactions.length;
     }
 
-    function getTransaction(
-        uint256 _txIndex
-    )
-        public
-        view
-        returns (
-            address to,
-            uint256 value,
-            bytes memory data,
-            bool executed,
-            uint256 numConfirmations
-        )
-    {
-        Transaction storage transaction = transactions[_txIndex];
+    function getAllTransactions() public view returns (Transaction[] memory) {
+        return transactions;
+    }
 
-        return (
-            transaction.to,
-            transaction.value,
-            transaction.data,
-            transaction.executed,
-            transaction.numConfirmations
-        );
+    function getOwners() public view returns (address[] memory) {
+        return owners;
     }
 
     function addOwner(address _owner) public {

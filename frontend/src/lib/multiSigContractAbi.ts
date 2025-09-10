@@ -200,39 +200,53 @@ export const MultiSigWalletAbi = [
         type: "function",
     },
     {
-        inputs: [
-            {
-                internalType: "uint256",
-                name: "_txIndex",
-                type: "uint256",
-            },
-        ],
-        name: "getTransaction",
+        inputs: [],
+        name: "getAllTransactions",
         outputs: [
             {
-                internalType: "address",
-                name: "to",
-                type: "address",
+                components: [
+                    {
+                        internalType: "address",
+                        name: "to",
+                        type: "address",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "value",
+                        type: "uint256",
+                    },
+                    {
+                        internalType: "bytes",
+                        name: "data",
+                        type: "bytes",
+                    },
+                    {
+                        internalType: "bool",
+                        name: "executed",
+                        type: "bool",
+                    },
+                    {
+                        internalType: "uint256",
+                        name: "numConfirmations",
+                        type: "uint256",
+                    },
+                ],
+                internalType: "struct MultiSigWallet.Transaction[]",
+                name: "",
+                type: "tuple[]",
             },
+        ],
+        stateMutability: "view",
+        type: "function",
+    },
+    {
+        inputs: [],
+        name: "getOwners",
+        outputs: [
             {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-            },
-            {
-                internalType: "bytes",
-                name: "data",
-                type: "bytes",
-            },
-            {
-                internalType: "bool",
-                name: "executed",
-                type: "bool",
-            },
-            {
-                internalType: "uint256",
-                name: "numConfirmations",
-                type: "uint256",
+                internalType: "address[]",
+                name: "",
+                type: "address[]",
             },
         ],
         stateMutability: "view",

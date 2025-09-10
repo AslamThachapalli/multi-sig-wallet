@@ -16,7 +16,6 @@ import { useAccount, useReadContract } from "wagmi";
 import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
 import { toast } from "sonner";
 import { Loader2Icon } from "lucide-react";
-import { localhost } from "viem/chains";
 
 interface AddWalletProps {
     onAddWallet: (walletAddress: string, walletName: string) => void;
@@ -29,8 +28,7 @@ export function AddWallet({ onAddWallet }: AddWalletProps) {
     const [walletAddress, setWalletAddress] = useState<string>("");
     const [walletName, setWalletName] = useState<string>("");
 
-    const { data: ownerCheck, isLoading, error, refetch: checkIsOwner } = useReadContract({
-        chainId: localhost.id,
+    const { isLoading, refetch: checkIsOwner } = useReadContract({
         address: walletAddress as `0x${string}`,
         abi: MultiSigWalletAbi,
         functionName: "isOwner",
@@ -40,16 +38,10 @@ export function AddWallet({ onAddWallet }: AddWalletProps) {
         },
     });
 
-    console.log('rendered with ownerCheck', ownerCheck, isLoading, error);
-
     const handleSubmit = async () => {
-        console.log("walletAddress", walletAddress);
-        console.log("walletName", walletName);
-
         if (!address) return;
 
         const { data: ownerCheck } = await checkIsOwner();
-        console.log("ownerCheck", ownerCheck);
 
         if (!ownerCheck) {
             toast.error(
