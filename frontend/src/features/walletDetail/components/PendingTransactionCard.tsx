@@ -22,36 +22,17 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// 3 buttons: confirm, revoke, execute
-// on confirm/revoke => Get confirmation status - read isConfirmed - revalidate
-// on confirm/revoke => Get 
-
 interface PendingTransactionCardProps {
     txIndex: number;
-    isExecutable: boolean;
-    isConfirmed: boolean;
-    numConfirmations: bigint;
     numConfirmationsRequired: bigint;
-    to: string;
-    value: bigint;
-    data: string;
-    getTransactionsQueryKey: readonly unknown[];
-    isRefreshing: boolean;
+    getTransactionsCountQueryKey: readonly unknown[];
 }
 
 export function PendingTransactionCard(
     props: Readonly<PendingTransactionCardProps>
 ) {
-    const {
-        txIndex,
-        isExecutable,
-        numConfirmations,
-        numConfirmationsRequired,
-        to,
-        value,
-        getTransactionsQueryKey,
-        isRefreshing,
-    } = props;
+    const { txIndex, numConfirmationsRequired, getTransactionsCountQueryKey } =
+        props;
 
     const { walletAddress } = useParams();
     const { address: userAddress } = useAccount();
@@ -62,10 +43,23 @@ export function PendingTransactionCard(
     >(undefined);
 
     const {
+        data: transaction,
+        isPending: isTransactionPending,
+        isRefetching: isTransactionRefetching,
+        error: getTransactionError,
+        queryKey: getTransactionQueryKey,
+    } = useReadContract({
+        address: walletAddress as `0x${string}`,
+        abi: MultiSigWalletAbi,
+        functionName: "transactions",
+        args: [BigInt(txIndex)],
+    });
+
+    const {
         data: isConfirmed,
-        isPending: isIsConfirmedPending,
-        isRefetching: isIsConfirmedRefetching,
+        isLoading: isConfirmedLoading,
         error: getIsConfirmedError,
+        queryKey: getIsConfirmedQueryKey,
     } = useReadContract({
         address: walletAddress as `0x${string}`,
         abi: MultiSigWalletAbi,
@@ -109,7 +103,13 @@ export function PendingTransactionCard(
             setAction(undefined);
 
             queryClient.invalidateQueries({
-                queryKey: getTransactionsQueryKey,
+                queryKey: getTransactionsCountQueryKey,
+            });
+            queryClient.invalidateQueries({
+                queryKey: getTransactionQueryKey,
+            });
+            queryClient.invalidateQueries({
+                queryKey: getIsConfirmedQueryKey,
             });
         }
     }, [isConfirmingSuccess]);
@@ -146,29 +146,54 @@ export function PendingTransactionCard(
 
     const isPending = isWritePending && isConfirming;
 
+    if (isTransactionPending) {
+        return <div>Transaction pending...</div>;
+    }
+
+    if (getTransactionError) {
+        return (
+            <div>
+                Error loading transaction {txIndex}:{" "}
+                {getTransactionError.shortMessage}
+            </div>
+        );
+    }
+
+    // If the transaction is executed, don't show it
+    if (transaction[3]) {
+        return null;
+    }
+
+    const isExecutable = transaction[4] >= numConfirmationsRequired;
+
     return (
-        <Card key={txIndex}>
+        <Card key={txIndex} className="w-xl">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">
                         Transaction #{txIndex}
                     </CardTitle>
-                    <Badge variant={isExecutable ? "default" : "secondary"}>
-                        {numConfirmations}/{numConfirmationsRequired}{" "}
-                        confirmations
-                    </Badge>
+                    {isTransactionRefetching ? (
+                        <Skeleton className="h-8 w-32" />
+                    ) : (
+                        <Badge variant={isExecutable ? "default" : "secondary"}>
+                            {transaction[4]}/{numConfirmationsRequired}{" "}
+                            confirmations
+                        </Badge>
+                    )}
                 </div>
                 <CardDescription>
-                    To: <span className="font-mono text-sm">{to}</span>
+                    To:{" "}
+                    <span className="font-mono text-sm">{transaction[0]}</span>
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between items-center text-sm">
                         <div>
                             <span className="font-medium">Amount:</span>
                             <span className="ml-2 font-mono">
-                                {formatEther(value)} ETH
+                                {formatEther(transaction[1])} ETH
                             </span>
                         </div>
                         <div>
@@ -181,13 +206,13 @@ export function PendingTransactionCard(
                         </div>
                     </div>
 
-                    {isRefreshing ? (
+                    {isConfirmedLoading || isTransactionRefetching ? (
                         <div className="flex gap-2 flex-wrap">
                             <Skeleton className="h-8 w-24" />
                             {isExecutable && <Skeleton className="h-8 w-24" />}
                         </div>
                     ) : (
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex justify-end gap-2 flex-wrap">
                             {isConfirmed ? (
                                 <Button
                                     onClick={() =>

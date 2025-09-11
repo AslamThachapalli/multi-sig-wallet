@@ -1,40 +1,12 @@
 import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
-import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
-import {
-    useAccount,
-    useReadContract,
-    useWriteContract,
-    useWaitForTransactionReceipt,
-    useReadContracts,
-} from "wagmi";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle, ExternalLink } from "lucide-react";
-import { formatEther, type Abi } from "viem";
-import { Badge } from "@/components/ui/badge";
+import { useReadContract } from "wagmi";
 import { PendingTransactionCard } from "./PendingTransactionCard";
-
-interface Transaction {
-    to: string;
-    value: bigint;
-    data: string;
-    executed: boolean;
-    numConfirmations: bigint;
-}
+import { useEffect } from "react";
 
 export function TransactionPending() {
     const { walletAddress } = useParams();
-    const { address: userAddress } = useAccount();
-
-    const [isConfirmed, setIsConfirmed] = useState<boolean[]>([]);
 
     // Get required confirmations
     const {
@@ -49,88 +21,60 @@ export function TransactionPending() {
 
     // Get all transactions
     const {
-        data: transactions,
-        isPending: isTransactionsPending,
-        isRefetching: isTransactionsRefetching,
-        error: getTransactionsError,
-        queryKey: getTransactionsQueryKey,
+        data: transactionsCount,
+        isPending: isTransactionsCountPending,
+        error: getTransactionsCountError,
+        queryKey: getTransactionsCountQueryKey,
     } = useReadContract({
         address: walletAddress as `0x${string}`,
         abi: MultiSigWalletAbi,
-        functionName: "getAllTransactions",
-    });
-
-    const gotTransactions = transactions && transactions.length > 0;
-
-    let isConfirmedReads: readonly {
-        address: `0x${string}`;
-        abi: Abi;
-        functionName: string;
-        args: (bigint | `0x${string}`)[];
-    }[] = [];
-
-    if (gotTransactions) {
-        isConfirmedReads = transactions.map((_, index) => ({
-            address: walletAddress as `0x${string}`,
-            abi: MultiSigWalletAbi,
-            functionName: "isConfirmed",
-            args: [BigInt(index), userAddress as `0x${string}`],
-        }));
-    }
-
-    // Get all transactions
-    const {
-        data: isConfirmedData,
-        isPending: isLoadingIsConfirmed,
-        isRefetching: isRefetchingIsConfirmed,
-        error: getIsConfirmedError,
-    } = useReadContracts({
-        contracts: isConfirmedReads,
-        query: {
-            enabled: !!transactions,
-        },
+        functionName: "getTransactionCount",
     });
 
     useEffect(() => {
-        if (isConfirmedData && isConfirmedData.length > 0) {
-            setIsConfirmed(
-                isConfirmedData.map((item) => item.result as boolean)
-            );
+        if (getNumConfirmationsError || getTransactionsCountError) {
+            toast.error("Error loading transactions");
         }
-    }, [isConfirmedData]);
+    }, [getNumConfirmationsError, getTransactionsCountError]);
+
+    if (isTransactionsCountPending || isNumConfirmationsLoading) {
+        return <div>Loading transactions...</div>;
+    }
+
+    if (getTransactionsCountError || getNumConfirmationsError) {
+        return (
+            <div className="flex flex-col space-y-4">
+                {getNumConfirmationsError && (
+                    <div>
+                        Error loading confirmations:{" "}
+                        {getNumConfirmationsError.shortMessage}
+                    </div>
+                )}
+                {getTransactionsCountError && (
+                    <div>
+                        Error loading transactions:{" "}
+                        {getTransactionsCountError.shortMessage}
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
-            {transactions?.map((tx, index) => {
-                let canExecute: boolean;
-                if (!numConfirmationsRequired) {
-                    canExecute = false;
-                } else {
-                    canExecute =
-                        tx.numConfirmations >= numConfirmationsRequired;
+            {Array.from({ length: Number(transactionsCount ?? 0) }).map(
+                (_, index) => {
+                    return (
+                        <PendingTransactionCard
+                            txIndex={index}
+                            numConfirmationsRequired={numConfirmationsRequired!}
+                            getTransactionsCountQueryKey={
+                                getTransactionsCountQueryKey
+                            }
+                        />
+                    );
                 }
-
-                if (tx.executed) {
-                    return null;
-                }
-
-                return (
-                    <PendingTransactionCard
-                        txIndex={index}
-                        isExecutable={canExecute}
-                        isConfirmed={false}
-                        numConfirmations={tx.numConfirmations}
-                        numConfirmationsRequired={
-                            numConfirmationsRequired ?? 0n
-                        }
-                        to={tx.to}
-                        value={tx.value}
-                        data={tx.data}
-                        getTransactionsQueryKey={getTransactionsQueryKey}
-                        isRefreshing={isTransactionsRefetching}
-                    />
-                );
-            })}
+            )}
         </div>
     );
 }
