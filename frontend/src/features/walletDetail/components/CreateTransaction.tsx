@@ -42,7 +42,7 @@ export function CreateTransaction() {
     useEffect(() => {
         if (error) {
             console.error("Error submitting transaction:", error);
-            toast.error("Failed to submit transaction");
+            toast.error("Failed to submit transaction with error: " + error.message);
             return;
         }
 
@@ -103,7 +103,7 @@ export function CreateTransaction() {
             address: walletAddress as `0x${string}`,
             abi: MultiSigWalletAbi,
             functionName: "submitTransaction",
-            args: [toAddress as `0x${string}`, amountInWei, ""],
+            args: [toAddress as `0x${string}`, amountInWei, "0x"],
         });
     };
 

@@ -432,4 +432,4 @@ export const MultiSigWalletAbi = [
         stateMutability: "payable",
         type: "receive",
     },
-];
+] as const;
