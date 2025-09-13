@@ -22,13 +22,12 @@ export function WalletDetailPage() {
     return (
         <SidebarProvider>
             <div className="max-w-2xl mx-auto py-16 flex flex-col gap-4">
-                <Link
-                    to={"/"}
-                    className="flex items-center gap-2"
-                >
-                    <ArrowLeft className="size-4" />
-                    <p className="text-sm">Go to wallet home</p>
-                </Link>
+                <div className="flex">
+                    <Link to={"/"} className="flex items-center gap-2">
+                        <ArrowLeft className="size-4" />
+                        <p className="text-sm">Go to wallet home</p>
+                    </Link>
+                </div>
                 <OwnersSidebar />
                 <WalletDetailNavigation />
                 <Outlet />

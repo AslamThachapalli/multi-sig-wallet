@@ -18,6 +18,8 @@ import { useEffect, useState } from "react";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { useParams } from "react-router";
 import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
+import { useMultiSigWalletInfo } from "@/hooks/useMultiSigWallet";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CreateTransaction() {
     const { walletAddress } = useParams();
@@ -39,14 +41,18 @@ export function CreateTransaction() {
         }
     );
 
+    const { getTransactionsCountQueryKey } = useMultiSigWalletInfo();
+
+    const queryClient = useQueryClient();
+
     useEffect(() => {
         if (error) {
-            console.error("Error submitting transaction:", error);
             toast.error("Failed to submit transaction with error: " + error.message);
             return;
         }
 
         if (isSuccess) {
+            queryClient.invalidateQueries({ queryKey: getTransactionsCountQueryKey });
             toast.success("Transaction submitted successfully!");
             handleDialogClose();
         }

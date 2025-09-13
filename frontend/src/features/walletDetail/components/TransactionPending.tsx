@@ -40,6 +40,7 @@ export function TransactionPending() {
                 (_, index) => {
                     return (
                         <PendingTransactionCard
+                            key={index}
                             txIndex={index}
                             numConfirmationsRequired={numConfirmationsRequired!}
                             getTransactionsCountQueryKey={

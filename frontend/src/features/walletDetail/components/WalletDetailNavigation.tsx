@@ -4,11 +4,6 @@ import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import { useNavigate, useLocation, useParams } from "react-router";
 import { CreateTransaction } from "./CreateTransaction";
 
-// Todo: Add Completed Transactions List.
-// Todo: Add send Ether to wallet function.
-// Todo: See Wallet Balance.
-// Todo: Disable execute button if not enough ether in wallet.
-
 export function WalletDetailNavigation() {
     const navigate = useNavigate();
     const location = useLocation();

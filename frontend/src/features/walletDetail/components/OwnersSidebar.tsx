@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DepositEther } from "./DepositEther";
+import { AddOwner } from "./AddOwner";
 import { formatEther } from "viem";
 
 export function OwnersSidebar() {
@@ -151,15 +152,7 @@ export function OwnersSidebar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <Button
-                    variant="outline"
-                    onClick={() => {
-                        navigator.clipboard.writeText(walletAddress as string);
-                        toast.success("Copied to clipboard");
-                    }}
-                >
-                    Add Owner
-                </Button>
+                <AddOwner />
                 <Button
                     variant="ghost"
                     onClick={() => {
