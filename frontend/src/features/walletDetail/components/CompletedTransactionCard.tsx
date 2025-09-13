@@ -1,22 +1,18 @@
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "@/components/ui/card";
-import { CheckCircle, ExternalLink } from "lucide-react";
-import { formatEther } from "viem";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useReadContract } from "wagmi";
 import { useParams } from "react-router";
 import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
-import { Skeleton } from "@/components/ui/skeleton";
+import { decodeFunctionData } from "viem";
+import { CompletedTransferContent } from "./completedCardSections/CompletedTransferContent";
+import { CompletedManageMemberContent } from "./completedCardSections/CompletedManageMemberContent";
 
 interface CompletedTransactionCardProps {
     txIndex: number;
     numConfirmationsRequired: bigint;
 }
+
+type TransactionType = "addOwner" | "removeOwner" | "transfer";
 
 export function CompletedTransactionCard(
     props: Readonly<CompletedTransactionCardProps>
@@ -77,63 +73,80 @@ export function CompletedTransactionCard(
         return null;
     }
 
+    // Determine transaction type by decoding the data
+    let transactionType: TransactionType = "transfer";
+    try {
+        if (transaction[2] && transaction[2].length > 0) {
+            const decoded = decodeFunctionData({
+                abi: MultiSigWalletAbi,
+                data: transaction[2],
+            });
+            transactionType = decoded.functionName as TransactionType;
+        }
+    } catch (error) {
+        // If decoding fails, assume it's a transfer transaction
+        console.warn("Failed to decode transaction data:", error);
+    }
+
+    const getMemberAddress = () => {
+        if (
+            transactionType === "addOwner" ||
+            transactionType === "removeOwner"
+        ) {
+            // Try to decode the transaction data to get the member address
+            try {
+                if (transaction[2] && transaction[2].length > 0) {
+                    const decoded = decodeFunctionData({
+                        abi: MultiSigWalletAbi,
+                        data: transaction[2],
+                    });
+                    if (
+                        (decoded.functionName === "addOwner" ||
+                            decoded.functionName === "removeOwner") &&
+                        decoded.args[0]
+                    ) {
+                        return decoded.args[0] as string;
+                    }
+                }
+            } catch (error) {
+                // If decoding fails, return unknown
+                console.warn("Failed to decode transaction data:", error);
+                return "Unknown";
+            }
+        }
+        return undefined;
+    };
+
+    const contentProps = {
+        txIndex,
+        isTransactionRefetching,
+        numConfirmations: transaction[4],
+        numConfirmationsRequired,
+    };
+
     return (
         <Card className="w-xl">
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        Transaction #{txIndex}
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                    </CardTitle>
-                    {isTransactionRefetching ? (
-                        <Skeleton className="h-6 w-24" />
-                    ) : (
-                        <Badge
-                            variant="default"
-                            className="bg-green-100 text-green-800 hover:bg-green-100"
-                        >
-                            Completed
-                        </Badge>
-                    )}
-                </div>
-                <CardDescription>
-                    To:{" "}
-                    <span className="font-mono text-sm">{transaction[0]}</span>
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                        <div>
-                            <span className="font-medium">Amount:</span>
-                            <span className="ml-2 font-mono">
-                                {formatEther(transaction[1])} ETH
-                            </span>
-                        </div>
-                        <div>
-                            <span className="font-medium">Confirmations:</span>
-                            <span className="ml-2 font-mono">
-                                {transaction[4]}/{numConfirmationsRequired}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-sm">
-                        <div>
-                            <span className="font-medium">Status:</span>
-                            <span className="ml-2 text-green-600 font-medium">
-                                Successfully Executed
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground text-xs">
-                                View on Explorer
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
+            {transactionType === "transfer" && (
+                <CompletedTransferContent
+                    {...contentProps}
+                    toAddress={transaction[0]}
+                    value={transaction[1]}
+                />
+            )}
+            {transactionType === "addOwner" && (
+                <CompletedManageMemberContent
+                    {...contentProps}
+                    memberAddress={getMemberAddress()!}
+                    isAdding={true}
+                />
+            )}
+            {transactionType === "removeOwner" && (
+                <CompletedManageMemberContent
+                    {...contentProps}
+                    memberAddress={getMemberAddress()!}
+                    isAdding={false}
+                />
+            )}
         </Card>
     );
 }

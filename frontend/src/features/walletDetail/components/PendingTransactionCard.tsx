@@ -1,15 +1,12 @@
-import {
-    Card,
-    CardFooter,
-} from "@/components/ui/card";
+import { Card, CardFooter } from "@/components/ui/card";
 import { decodeFunctionData } from "viem";
 import { useAccount, useBalance, useReadContract } from "wagmi";
 import { useParams } from "react-router";
 import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
 import { useQueryClient } from "@tanstack/react-query";
 import { PendingTransactionActions } from "./pendingCardSections/PendingTransactionActions";
-import { AddOwnerContent } from "./pendingCardSections/AddOwnerContent";
 import { TransferEtherContent } from "./pendingCardSections/TransferEtherContent";
+import { ManageMemberContent } from "./pendingCardSections/ManageMemberContent";
 
 interface PendingTransactionCardProps {
     txIndex: number;
@@ -57,6 +54,12 @@ export function PendingTransactionCard(
         address: walletAddress as `0x${string}`,
     });
 
+    const { refetch: refetchOwners } = useReadContract({
+        address: walletAddress as `0x${string}`,
+        abi: MultiSigWalletAbi,
+        functionName: "getOwners",
+    });
+
     if (isTransactionPending) {
         return <div>Transaction pending...</div>;
     }
@@ -90,17 +93,35 @@ export function PendingTransactionCard(
         console.warn("Failed to decode transaction data:", error);
     }
 
-    const handleOnTransactionConfirmed = () => {
+    const handleOnTransactionConfimedOrRevoked = () => {
+        queryClient.invalidateQueries({
+            queryKey: getIsConfirmedQueryKey,
+        });
         queryClient.invalidateQueries({
             queryKey: getTransactionsCountQueryKey,
         });
         queryClient.invalidateQueries({
             queryKey: getTransactionQueryKey,
         });
+    };
+
+    const handleOnTransactionExecuted = () => {
         queryClient.invalidateQueries({
-            queryKey: getIsConfirmedQueryKey,
+            queryKey: getTransactionsCountQueryKey,
         });
-        refetchBalance();
+        queryClient.invalidateQueries({
+            queryKey: getTransactionQueryKey,
+        });
+
+        switch (transactionType) {
+            case "transfer":
+                refetchBalance();
+                break;
+            case "addOwner":
+            case "removeOwner":
+                refetchOwners();
+                break;
+        }
     };
 
     const getOwnerAddressToAdd = () => {
@@ -128,30 +149,63 @@ export function PendingTransactionCard(
         return undefined;
     };
 
+    const getOwnerAddressToRemove = () => {
+        if (transactionType === "removeOwner") {
+            // Try to decode the transaction data to get the owner address
+            try {
+                if (transaction[2] && transaction[2].length > 0) {
+                    const decoded = decodeFunctionData({
+                        abi: MultiSigWalletAbi,
+                        data: transaction[2],
+                    });
+                    if (
+                        decoded.functionName === "removeOwner" &&
+                        decoded.args[0]
+                    ) {
+                        return decoded.args[0] as string;
+                    }
+                }
+            } catch (error) {
+                // If decoding fails, return unknown
+                console.warn("Failed to decode transaction data:", error);
+                return "Unknown";
+            }
+        }
+        return undefined;
+    };
+
     const isExecutable = transaction[4] >= numConfirmationsRequired;
     const isEnoughBalance = transaction[1] <= (balance?.value ?? 0n);
+
+    const contentProps = {
+        txIndex,
+        isTransactionRefetching,
+        isExecutable,
+        numConfirmations: transaction[4],
+        numConfirmationsRequired,
+    };
 
     return (
         <Card key={txIndex} className="w-xl">
             {transactionType === "transfer" && (
                 <TransferEtherContent
-                    txIndex={txIndex}
-                    isTransactionRefetching={isTransactionRefetching}
-                    isExecutable={isExecutable}
-                    numConfirmations={transaction[4]}
-                    numConfirmationsRequired={numConfirmationsRequired}
+                    {...contentProps}
                     toAddress={transaction[0]}
                     value={transaction[1]}
                 />
             )}
             {transactionType === "addOwner" && (
-                <AddOwnerContent
-                    txIndex={txIndex}
-                    isTransactionRefetching={isTransactionRefetching}
-                    isExecutable={isExecutable}
-                    numConfirmations={transaction[4]}
-                    numConfirmationsRequired={numConfirmationsRequired}
-                    ownerAddressToAdd={getOwnerAddressToAdd()!}
+                <ManageMemberContent
+                    {...contentProps}
+                    memberAddress={getOwnerAddressToAdd()!}
+                    isAdding={true}
+                />
+            )}
+            {transactionType === "removeOwner" && (
+                <ManageMemberContent
+                    {...contentProps}
+                    memberAddress={getOwnerAddressToRemove()!}
+                    isAdding={false}
                 />
             )}
             <CardFooter className="flex justify-end">
@@ -162,7 +216,11 @@ export function PendingTransactionCard(
                     isTransactionRefetching={isTransactionRefetching}
                     isExecutable={isExecutable}
                     isEnoughBalance={isEnoughBalance}
-                    onTransactionConfirmed={handleOnTransactionConfirmed}
+                    onTransactionConfirmed={
+                        handleOnTransactionConfimedOrRevoked
+                    }
+                    onTransactionRevoked={handleOnTransactionConfimedOrRevoked}
+                    onTransactionExecuted={handleOnTransactionExecuted}
                 />
             </CardFooter>
         </Card>

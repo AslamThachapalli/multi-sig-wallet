@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DepositEther } from "./DepositEther";
 import { AddOwner } from "./AddOwner";
+import { RemoveOwner } from "./RemoveOwner";
 import { formatEther } from "viem";
 
 export function OwnersSidebar() {
@@ -153,15 +154,7 @@ export function OwnersSidebar() {
             </SidebarContent>
             <SidebarFooter>
                 <AddOwner />
-                <Button
-                    variant="ghost"
-                    onClick={() => {
-                        navigator.clipboard.writeText(walletAddress as string);
-                        toast.success("Copied to clipboard");
-                    }}
-                >
-                    Remove Owner
-                </Button>
+                <RemoveOwner />
                 <SidebarSeparator />
                 <DepositEther balanceQueryKey={balanceQueryKey} />
             </SidebarFooter>

@@ -14,7 +14,9 @@ interface PendingTransactionActionsProps {
     isTransactionRefetching: boolean;
     isExecutable: boolean;
     isEnoughBalance: boolean;
-    onTransactionConfirmed: () => void;
+    onTransactionConfirmed?: () => void;
+    onTransactionRevoked?: () => void;
+    onTransactionExecuted?: () => void;
 }
 
 export const PendingTransactionActions = (
@@ -28,6 +30,8 @@ export const PendingTransactionActions = (
         isExecutable,
         isEnoughBalance,
         onTransactionConfirmed,
+        onTransactionRevoked,
+        onTransactionExecuted,
     } = props;
     const { walletAddress } = useParams();
 
@@ -58,17 +62,19 @@ export const PendingTransactionActions = (
         if (isConfirmingSuccess) {
             switch (action) {
                 case "confirm":
+                    onTransactionConfirmed?.();
                     toast.success("Transaction confirmed successfully!");
                     break;
                 case "revoke":
+                    onTransactionRevoked?.();
                     toast.success("Transaction revoked successfully!");
                     break;
                 case "execute":
+                    onTransactionExecuted?.();
                     toast.success("Transaction executed successfully!");
                     break;
             }
             setAction(undefined);
-            onTransactionConfirmed();
         }
     }, [isConfirmingSuccess]);
 
