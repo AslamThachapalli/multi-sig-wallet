@@ -11,6 +11,7 @@ import { formatEther } from "viem";
 import { Badge } from "@/components/ui/badge";
 import {
     useAccount,
+    useBalance,
     useReadContract,
     useWaitForTransactionReceipt,
     useWriteContract,
@@ -67,6 +68,10 @@ export function PendingTransactionCard(
         args: [BigInt(txIndex), userAddress as `0x${string}`],
     });
 
+    const { refetch: refetchBalance } = useBalance({
+        address: walletAddress as `0x${string}`,
+    })
+
     // Wagmi hooks for contract interactions
     const {
         writeContract,
@@ -111,6 +116,7 @@ export function PendingTransactionCard(
             queryClient.invalidateQueries({
                 queryKey: getIsConfirmedQueryKey,
             });
+            refetchBalance();
         }
     }, [isConfirmingSuccess]);
 

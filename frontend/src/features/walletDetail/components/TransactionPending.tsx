@@ -1,43 +1,17 @@
-import { MultiSigWalletAbi } from "@/lib/multiSigContractAbi";
-import { useParams } from "react-router";
-import { toast } from "sonner";
-import { useReadContract } from "wagmi";
 import { PendingTransactionCard } from "./PendingTransactionCard";
-import { useEffect } from "react";
+import { useMultiSigWalletInfo } from "@/hooks/useMultiSigWallet";
 
 export function TransactionPending() {
-    const { walletAddress } = useParams();
-
-    // Get required confirmations
     const {
-        data: numConfirmationsRequired,
-        isLoading: isNumConfirmationsLoading,
-        error: getNumConfirmationsError,
-    } = useReadContract({
-        address: walletAddress as `0x${string}`,
-        abi: MultiSigWalletAbi,
-        functionName: "numConfirmationsRequired",
-    });
+        numConfirmationsRequired,
+        transactionsCount,
+        isLoading: isLoadingMultiSigWalletInfo,
+        getNumConfirmationsError,
+        getTransactionsCountError,
+        getTransactionsCountQueryKey,
+    } = useMultiSigWalletInfo();
 
-    // Get all transactions
-    const {
-        data: transactionsCount,
-        isPending: isTransactionsCountPending,
-        error: getTransactionsCountError,
-        queryKey: getTransactionsCountQueryKey,
-    } = useReadContract({
-        address: walletAddress as `0x${string}`,
-        abi: MultiSigWalletAbi,
-        functionName: "getTransactionCount",
-    });
-
-    useEffect(() => {
-        if (getNumConfirmationsError || getTransactionsCountError) {
-            toast.error("Error loading transactions");
-        }
-    }, [getNumConfirmationsError, getTransactionsCountError]);
-
-    if (isTransactionsCountPending || isNumConfirmationsLoading) {
+    if (isLoadingMultiSigWalletInfo) {
         return <div>Loading transactions...</div>;
     }
 

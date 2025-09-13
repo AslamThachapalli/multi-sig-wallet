@@ -4,6 +4,11 @@ import { Tabs, TabsTrigger, TabsList } from "@/components/ui/tabs";
 import { useNavigate, useLocation, useParams } from "react-router";
 import { CreateTransaction } from "./CreateTransaction";
 
+// Todo: Add Completed Transactions List.
+// Todo: Add send Ether to wallet function.
+// Todo: See Wallet Balance.
+// Todo: Disable execute button if not enough ether in wallet.
+
 export function WalletDetailNavigation() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -16,7 +21,7 @@ export function WalletDetailNavigation() {
         : "completed";
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-xl">
             <h1 className="text-2xl font-bold">Transactions</h1>
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
@@ -36,7 +41,7 @@ export function WalletDetailNavigation() {
                     <CreateTransaction />
                 </div>
                 <Button variant="outline" onClick={toggleSidebar}>
-                    {open ? "Hide Owners" : "View Owners"}
+                    {open ? "Hide Wallet Info" : "Show Wallet Info"}
                 </Button>
             </div>
         </div>

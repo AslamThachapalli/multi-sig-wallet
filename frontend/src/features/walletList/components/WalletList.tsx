@@ -88,8 +88,7 @@ export function WalletList() {
                             <CardDescription>
                                 <div className="flex justify-between items-center">
                                     <p className="text-sm text-muted-foreground">
-                                        {wallet.walletAddress?.slice(0, 6)}...
-                                        {wallet.walletAddress?.slice(-4)}
+                                        {wallet.walletAddress}
                                     </p>
                                     <div className=" text-muted-foreground hidden group-hover:flex items-center gap-2">
                                         <span className="text-sm ">Open</span>
