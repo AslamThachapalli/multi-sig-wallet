@@ -33,7 +33,8 @@ export const RemoveOwner = () => {
 
     const queryClient = useQueryClient();
 
-    const { getTransactionsCountQueryKey } = useMultiSigWalletInfo();
+    const { numConfirmationsRequired, getTransactionsCountQueryKey } =
+        useMultiSigWalletInfo();
 
     const { writeContract, data: hash, isPending, error } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -102,7 +103,12 @@ export const RemoveOwner = () => {
     return (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" >
+                <Button
+                    variant="ghost"
+                    disabled={
+                        (owners?.length ?? 3) <= (numConfirmationsRequired ?? 3)
+                    }
+                >
                     Remove Owner
                 </Button>
             </DialogTrigger>

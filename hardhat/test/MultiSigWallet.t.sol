@@ -154,7 +154,7 @@ contract MultiSigWalletTest is Test {
         msWallet.confirmTransaction(0);
         
         // Check confirmation count
-        (, , , , uint256 numConfirmations) = msWallet.getTransaction(0);
+        (, , , , uint256 numConfirmations) = msWallet.transactions(0);
         assertEq(numConfirmations, 1);
     }
 
@@ -174,7 +174,7 @@ contract MultiSigWalletTest is Test {
         msWallet.confirmTransaction(0);
         
         // Check confirmation count
-        (, , , , uint256 numConfirmations) = msWallet.getTransaction(0);
+        (, , , , uint256 numConfirmations) = msWallet.transactions(0);
         assertEq(numConfirmations, 3);
     }
 
@@ -256,7 +256,7 @@ contract MultiSigWalletTest is Test {
         msWallet.executeTransaction(0);
         
         // Check transaction is executed
-        (, , , bool executed, ) = msWallet.getTransaction(0);
+        (, , , bool executed, ) = msWallet.transactions(0);
         assertTrue(executed);
         
         // Check balance transferred
@@ -335,7 +335,7 @@ contract MultiSigWalletTest is Test {
         msWallet.revokeConfirmation(0);
         
         // Check confirmation count decreased
-        (, , , , uint256 numConfirmations) = msWallet.getTransaction(0);
+        (, , , , uint256 numConfirmations) = msWallet.transactions(0);
         assertEq(numConfirmations, 0);
     }
 
@@ -405,7 +405,7 @@ contract MultiSigWalletTest is Test {
         msWallet.submitTransaction(toAddress1, 1 ether, "0x1234");
         
         (address to, uint256 value, bytes memory data, bool executed, uint256 numConfirmations) = 
-            msWallet.getTransaction(0);
+            msWallet.transactions(0);
         
         assertEq(to, toAddress1);
         assertEq(value, 1 ether);
@@ -416,7 +416,7 @@ contract MultiSigWalletTest is Test {
 
     function test_RevertWhen_GetNonExistentTransaction() public {
         vm.expectRevert();
-        msWallet.getTransaction(0);
+        msWallet.transactions(0);
     }
 
     // Owner Management Tests
@@ -519,7 +519,7 @@ contract MultiSigWalletTest is Test {
         msWallet.executeTransaction(0);
         
         // Verify execution
-        (, , , bool executed, ) = msWallet.getTransaction(0);
+        (, , , bool executed, ) = msWallet.transactions(0);
         assertTrue(executed);
         assertEq(address(toAddress1).balance, 1 ether);
     }
@@ -553,14 +553,14 @@ contract MultiSigWalletTest is Test {
         msWallet.executeTransaction(0);
         
         // Verify first transaction executed
-        (, , , bool executed1, ) = msWallet.getTransaction(0);
+        (, , , bool executed1, ) = msWallet.transactions(0);
         assertTrue(executed1);
         
         // Verify other transactions still pending
-        (, , , bool executed2, ) = msWallet.getTransaction(1);
+        (, , , bool executed2, ) = msWallet.transactions(1);
         assertFalse(executed2);
         
-        (, , , bool executed3, ) = msWallet.getTransaction(2);
+        (, , , bool executed3, ) = msWallet.transactions(2);
         assertFalse(executed3);
     }
 }
