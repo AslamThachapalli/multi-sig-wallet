@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, TrashIcon } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useNavigate } from "react-router";
+import { CreateWallet } from "./CreateWallet";
 
 export function WalletList() {
     const navigate = useNavigate();
@@ -50,7 +51,10 @@ export function WalletList() {
                     <h2 className="text-2xl font-bold">
                         No wallets found. Add a wallet to get started.
                     </h2>
-                    <AddWallet onAddWallet={handleAddWallet} />
+                    <div className="flex gap-2">
+                        <AddWallet onAddWallet={handleAddWallet} />
+                        <CreateWallet onWalletCreated={handleAddWallet} />
+                    </div>
                 </div>
             </div>
         );
@@ -62,7 +66,10 @@ export function WalletList() {
 
     return (
         <div className="max-w-3xl mx-auto flex flex-col gap-4 justify-start items-start">
-            <AddWallet onAddWallet={handleAddWallet} />
+            <div className="flex gap-2">
+                <AddWallet onAddWallet={handleAddWallet} />
+                <CreateWallet onWalletCreated={handleAddWallet} />
+            </div>
             <div className="w-full flex flex-col gap-2 justify-start items-start">
                 <h1 className="text-2xl font-bold mb-4">Your Wallets</h1>
                 {wallets.map((wallet) => (
@@ -78,9 +85,12 @@ export function WalletList() {
                                     variant="destructive"
                                     size={"icon"}
                                     className="size-8"
-                                    onClick={() =>
-                                        handleRemoveWallet(wallet.walletAddress)
-                                    }
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveWallet(
+                                            wallet.walletAddress
+                                        );
+                                    }}
                                 >
                                     <TrashIcon />
                                 </Button>

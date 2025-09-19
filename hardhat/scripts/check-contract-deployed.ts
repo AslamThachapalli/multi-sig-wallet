@@ -1,10 +1,10 @@
-import { createPublicClient, http } from 'viem'
-import { localhost} from 'viem/chains'
+import { createPublicClient, http } from "viem";
+import { localhost } from "viem/chains";
 
 const client = createPublicClient({
-  chain: localhost,
-  transport: http(),
-})
+    chain: localhost,
+    transport: http(),
+});
 
 // check if there is a contract deployed at this address
 const code = await client.getCode({

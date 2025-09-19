@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import "./MultiSigWallet.sol";
 
 contract MultiSigFactory {
-    event WalletCreated(address wallet, address[] owners, uint256 required);
+    event WalletCreated(address indexed deployer, address wallet);
 
     function createWallet(
         address[] memory owners,
@@ -14,7 +14,7 @@ contract MultiSigFactory {
             owners,
             numConfirmationsRequired
         );
-        emit WalletCreated(address(wallet), owners, numConfirmationsRequired);
+        emit WalletCreated(msg.sender, address(wallet));
         return address(wallet);
     }
 }
