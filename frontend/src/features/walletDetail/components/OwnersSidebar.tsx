@@ -34,6 +34,12 @@ export function OwnersSidebar() {
         functionName: "getOwners",
     });
 
+    const { data: numConfirmationsRequired } = useReadContract({
+        address: walletAddress as `0x${string}`,
+        abi: MultiSigWalletAbi,
+        functionName: "numConfirmationsRequired",
+    });
+
     const {
         data: balance,
         isLoading: isBalanceLoading,
@@ -90,7 +96,9 @@ export function OwnersSidebar() {
                 <SidebarGroup>
                     <SidebarGroupLabel className="-ml-2 gap-1.5">
                         Required Confirmations{" "}
-                        <p className="text-sm font-medium">3</p>
+                        <p className="text-sm font-medium">
+                            {numConfirmationsRequired}
+                        </p>
                     </SidebarGroupLabel>
                 </SidebarGroup>
 
