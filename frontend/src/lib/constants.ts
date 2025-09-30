@@ -1,4 +1,4 @@
 export const CONTRACT_ADDRESSES = {
-    MULTISIG_FACTORY:
-        "0x5fbdb2315678afecb367f032d93f642f64180aa3" as `0x${string}`,
+    MULTISIG_FACTORY: import.meta.env
+        .VITE_MULTISIG_FACTORY_ADDRESS as `0x${string}`,
 } as const;

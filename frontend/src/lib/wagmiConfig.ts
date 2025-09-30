@@ -5,6 +5,6 @@ export const wagmiConfig = createConfig({
     chains: [hardhat, sepolia],
     transports: {
         [hardhat.id]: http(),
-        [sepolia.id]: http(),
+        [sepolia.id]: http(import.meta.env.VITE_ETH_SEPOLIA_RPC),
     },
 });
