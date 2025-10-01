@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "aslamthachapalli"
+  },
+  "targets": {
+    "aslamthachapalli": {
+      "hosting": {
+        "multisig": [
+          "multisig-wallet"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
