@@ -1,5 +1,5 @@
 # 💰 MultiSig Wallet (EVM)
-A production-style MultiSig Wallet DApp built with Solidity, Hardhat, React + Wagmi. \
+A production-style MultiSig Wallet DApp built with **Solidity**, **Hardhat**, **React + Wagmi**. \
 This project demonstrates how a decentralized multi-signature wallet works, with support for:
 - ✅ ETH transfers
 - ✅ ERC-20 token transfers
@@ -13,7 +13,10 @@ _Deployed on Ethereum Sepolia testnet with a hosted frontend._
 Frontend: [multisig.aslamthachapalli.com](https://multisig.aslamthachapalli.com/) \
 Contracts (Sepolia):
 - MultiSigFactory: [0x57CBe681FbfBeE93051E921797a237Bc42459d2A](https://sepolia.etherscan.io/address/0x57CBe681FbfBeE93051E921797a237Bc42459d2A)
-- Example MultiSigWallet: [0xa319197414f40d4B4309Fee320bF98ceAa3e1dfD](https://sepolia.etherscan.io/address/0xa319197414f40d4B4309Fee320bF98ceAa3e1dfD)
+- Example MultiSigWallet: [0x561477E09603d6476Fc5433Bb6823b5565f2Ee6a](https://sepolia.etherscan.io/address/0x561477E09603d6476Fc5433Bb6823b5565f2Ee6a)
+
+### Watch Demo
+[![Watch the demo](demo-thumbnail.png)](https://youtu.be/LN_bBdN5nz0)
 
 ## 📖 Project Overview
 A MultiSig wallet is a smart contract where multiple owners must approve a transaction before it is executed. \
@@ -33,7 +36,7 @@ This increases security for organizations, DAOs, and treasuries.
 ### 1. Clone the Repo
 ### 2. Install Dependencies
 ### 3. Deploy Contracts to Hardhat local chain.
-#### 1. Run Hardhat Node
+#### 3.1. Run Hardhat Node
 Open Terminal 1
 ```
 npx hardhat node
@@ -42,7 +45,7 @@ npx hardhat node
 - This Hardhat local chain will give 20 test account addresses with 10,000 ETH each.
 - Add your preferred number of accounts to your metamask wallet for better interaction with the dapp.
 
-#### 2. Deploy contract to the local chain
+#### 3.2. Deploy contract to the local chain
 Open Terminal 2
 ```
 npx hardhat ignition --network localhost deploy ignition/modules/MultiSigFactory.ts
